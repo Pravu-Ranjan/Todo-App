@@ -1,17 +1,14 @@
-import React, { Fragment, useState } from 'react'
-import { fetchTodos, Todo, Comment } from '../../Recoil-State/Atom'
+import React, { Fragment } from 'react'
+import { fetchTodos, Todo } from '../../Recoil-State/Atom'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import axios from 'axios'
+import CreateComment from './CreateComment'
 
 var updateTodoURL = process.env.REACT_APP_API_PATH + '/update'
-var addCommentURL = process.env.REACT_APP_API_PATH + '/comment/create'
 
 function TodoList() {
   const allTodos = useRecoilValue(fetchTodos)
   const [todo, setTodo] = useRecoilState(Todo)
-  const [comment, setComment] = useRecoilState(Comment)
-  const [comments, setComments] = useState({ key: '', value: '' })
-  console.log(comments)
 
   const TodoArray = allTodos ? allTodos.todos : []
   let progressList = []
@@ -48,38 +45,6 @@ function TodoList() {
     }
   }
 
-  const handleOnChangeComment = (key, event) => {
-    event.preventDefault()
-    const value = event.target.value
-    setComments({
-      key: key,
-      value: value,
-    })
-  }
-
-  const handleOnSubmit = async (key, data, event) => {
-    event.preventDefault()
-
-    console.log(comments)
-
-    try {
-      let commentBody = {
-        comment: comments,
-        todoId: data._id,
-      }
-      const response = await axios.post(addCommentURL, commentBody)
-
-      if (response.data.message) {
-        setComment(commentBody)
-        setComments('')
-      } else {
-        throw new Error(`Can't post the api`)
-      }
-    } catch (error) {
-      console.log(error.message)
-    }
-  }
-
   const todoProgressList = () =>
     progressList &&
     progressList.map((data, key) => (
@@ -102,39 +67,7 @@ function TodoList() {
                 </button>
               </div>
             </div>
-            <div className="row">
-              <div className="col-12">
-                <form
-                  class="commentForm"
-                  onSubmit={(event) => handleOnSubmit(key, data, event)}
-                >
-                  <div className="container-fluid comment-container">
-                    <div className="row">
-                      <div className="col-8">
-                        <input
-                          type="text"
-                          className="form-control todo-comment"
-                          placeholder="your comment"
-                          name="comment"
-                          value={comments.value}
-                          onChange={(event) =>
-                            handleOnChangeComment(key, event)
-                          }
-                        />
-                      </div>
-                      <div className="col-4">
-                        <button
-                          type="submit"
-                          class="comment-btn comment-btn--primary uppercase"
-                        >
-                          Send
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
+            <CreateComment index={key} todoId={data._id} />
             <div className="row">
               <div className="col">
                 <table className="table mt-5">
