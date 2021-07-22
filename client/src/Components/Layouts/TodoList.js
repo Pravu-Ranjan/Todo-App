@@ -10,7 +10,7 @@ function TodoList() {
   const allTodos = useRecoilValue(fetchTodos)
   const [todo, setTodo] = useRecoilState(Todo)
   const [comment, setComment] = useRecoilState(Comment)
-  const [comments, setComments] = useState([{ id: '', value: '' }])
+  const [comments, setComments] = useState({ key: '', value: '' })
   console.log(comments)
 
   const TodoArray = allTodos ? allTodos.todos : []
@@ -48,52 +48,36 @@ function TodoList() {
     }
   }
 
-  const handleOnChangeComment = (data, event) => {
+  const handleOnChangeComment = (key, event) => {
     event.preventDefault()
-    // const name = event.target.name
     const value = event.target.value
-    const id = event.target.id
-    // console.log(name)
-    // const commentsList = (prevState) => ({
-    //   ...prevState,
-    //   comments,
-    // })
-    // // commentsList[data._id][name] = value
-    // console.log(commentsList)
-    setComments([
-      (prevState) => ({
-        ...prevState,
-        id: id,
-        value: value,
-      }),
-    ])
+    setComments({
+      key: key,
+      value: value,
+    })
   }
 
-  const handleOnSubmit = async (data, event) => {
+  const handleOnSubmit = async (key, data, event) => {
     event.preventDefault()
 
     console.log(comments)
-    setComments({
-      id: '',
-      name: '',
-      value: '',
-    })
-    // try {
-    //   let commentBody = {
-    //     comment: comments,
-    //     todoId: data._id,
-    //   }
-    //   const response = await axios.post(addCommentURL, commentBody)
 
-    //   if (response.data.message) {
-    //     setComment(commentBody)
-    //     setComments('')
-    //   } else {
-    //     throw new Error(`Can't post the api`)
-    //   }
-    // } catch (error) {
-    //   console.log(error.message)
-    // }
+    try {
+      let commentBody = {
+        comment: comments,
+        todoId: data._id,
+      }
+      const response = await axios.post(addCommentURL, commentBody)
+
+      if (response.data.message) {
+        setComment(commentBody)
+        setComments('')
+      } else {
+        throw new Error(`Can't post the api`)
+      }
+    } catch (error) {
+      console.log(error.message)
+    }
   }
 
   const todoProgressList = () =>
@@ -122,7 +106,7 @@ function TodoList() {
               <div className="col-12">
                 <form
                   class="commentForm"
-                  onSubmit={(event) => handleOnSubmit(data, event)}
+                  onSubmit={(event) => handleOnSubmit(key, data, event)}
                 >
                   <div className="container-fluid comment-container">
                     <div className="row">
@@ -132,10 +116,9 @@ function TodoList() {
                           className="form-control todo-comment"
                           placeholder="your comment"
                           name="comment"
-                          id={data._id}
                           value={comments.value}
                           onChange={(event) =>
-                            handleOnChangeComment(data, event)
+                            handleOnChangeComment(key, event)
                           }
                         />
                       </div>
