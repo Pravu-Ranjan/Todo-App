@@ -1,5 +1,5 @@
 import axios from 'axios'
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, memo } from 'react'
 import { Comment } from '../../Recoil-State/Atom'
 import { useRecoilState } from 'recoil'
 var addCommentURL = process.env.REACT_APP_API_PATH + '/comment/create'
@@ -7,8 +7,7 @@ var addCommentURL = process.env.REACT_APP_API_PATH + '/comment/create'
 function CreateComment(props) {
   const [comment, setComment] = useRecoilState(Comment)
   const [comments, setComments] = useState([{ value: '' }])
-  console.log(comments)
-  console.log(props.index, 'dsjfks')
+  const [inputValue, setInputValue] = useState('')
 
   const getRef = useRef(null)
   const handleOnChangeComment = (index, event) => {
@@ -16,19 +15,21 @@ function CreateComment(props) {
     let data = [...comments]
     data[index] = { value: event.target.value }
     setComments(data)
+    setInputValue(event.target.value)
   }
 
   const handleOnSubmit = async (index, event) => {
     event.preventDefault()
     getRef.current.focus()
-    console.log(comments[index].value)
+
     try {
       let commentBody = { comment: comments[index].value, todoId: props.todoId }
       const response = await axios.post(addCommentURL, commentBody)
 
       if (response.data.message) {
         setComment(commentBody)
-        setComments([{ value: '' }])
+        setComments((comments[index].value = ''))
+        setInputValue('')
       } else {
         throw new Error(`Can't post the api`)
       }
@@ -36,6 +37,7 @@ function CreateComment(props) {
       console.log(error.message)
     }
   }
+  console.log(comments, 'hello')
   return (
     <div>
       <div className="row">
@@ -52,7 +54,7 @@ function CreateComment(props) {
                     className="form-control todo-comment"
                     placeholder="your comment"
                     name="comment"
-                    value={comments.value}
+                    value={inputValue}
                     ref={getRef}
                     onChange={(event) =>
                       handleOnChangeComment(props.index, event)
@@ -76,4 +78,4 @@ function CreateComment(props) {
   )
 }
 
-export default CreateComment
+export default memo(CreateComment)
